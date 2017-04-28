@@ -1,0 +1,20 @@
+---
+vms:
+- id: and123 
+  name: MyAnsibleVM
+  vcpu: 2 
+  vram: 1024
+  os_disk: 2
+  os_type: Linux
+  disk_path: /var/lib/libvirt/images/myvm-1.img,bus=virtio,size=10
+  network: default
+  cdrom:  /home/cloud/test1.iso
+- id: and1234 
+  name: MyAnsibleVM1
+  vcpu: 8 
+  vram: 2048
+  os_disk: 8
+  os_type: Unix
+  disk_path: /var/lib/libvirt/images/myvm-2.img,bus=virtio,size=10
+  network: default
+  cdrom:  /home/cloud/test2.iso

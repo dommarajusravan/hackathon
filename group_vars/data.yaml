@@ -1,0 +1,15 @@
+---
+remote_path: /tmp/
+kvm:
+  host: kvm_host1
+vms:
+- id: and123 
+  name: MyAnsibleVM
+  vcpu: 2 
+  vram: 1024
+  os_disk: 2
+  os_type: Linux
+  disk_path: /var/lib/libvirt/images
+  image_source: /home/cloud/Downloads
+  image_name: cirros-0.3.5-x86_64-disk
+  network: default

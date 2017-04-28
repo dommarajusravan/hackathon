@@ -1,0 +1,40 @@
+#!/bin/bash
+
+
+name={{ item.name }}
+ram={{ item.vram }}
+cpu={{ item.vcpu }}
+network={{ item.network }}
+os_size={{ item.os_disk }}G
+os_type={{ item.os_type }}
+os_disk={{ item.disk_path}}
+cdrom={{ item.cdrom}}
+
+existing_vm=`virsh list --all | grep $name | awk '{ print $2}'`
+vm_status=`virsh list --all | grep $name | awk '{ print $3}'`
+
+if [ "$existing_vm" == "$name" ]; then
+     if [ $vm_status == 'running' ]; then
+           virsh destroy $name
+           virsh undefine $name
+     elif [ $vm_status == 'shut' ] ; then
+           virsh undefine $name
+     fi
+fi
+
+
+
+virt-install \
+  --name=$name \
+  --ram=$ram \
+  --vcpus=$cpu,cores=$cpu \
+  --network network=$network,model=virtio, \
+  --os-type=$os_type \
+  --virt-type=kvm \
+  --disk path=$os_disk,cache=none,device=disk,bus=virtio \
+  --noautoconsole \
+  --graphics vnc,listen=0.0.0.0 \
+  --cdrom $cdrom \
+  --autostart \
+  --noreboot 
+

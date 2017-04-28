@@ -1,0 +1,79 @@
+---
+- name: Call back test
+  #hosts: remote
+  hosts: "{{ kvm.host }}"
+  vars_files:
+     - ../group_vars/data.yaml
+
+  tasks:
+   - name: "Create_script"
+     become: yes
+     template: src=../templates/launch_vm.sh.j2 dest={{ remote_path }}launch_vm-{{ item.id }}.sh mode=0755
+     with_items: "{{ vms }}"
+     tags:
+      - launch_vm
+      - test
+
+   - name: "POST_task_1"
+     uri:
+      url: http://localhost:8100/progress.php
+      method: POST
+      body: "task=create script&notify=true"
+      status_code: 200
+      headers:
+        Content-Type: "application/x-www-form-urlencoded"
+     tags:
+      - launch_vm
+      - test
+
+#  - debug: msg="{{item.name}}"
+#    with_items: "{{ vms }}"
+#    tags:
+#      - test
+
+   - name: Launching VM
+     become: yes
+     shell: bash {{ remote_path }}launch_vm-{{ item.id }}.sh
+     with_items: "{{ vms }}"
+     tags:
+       - launch_vm
+
+   - name: "POST_task_2"
+     uri:
+      url: http://localhost:8100/progress.php
+      method: POST
+      body: "task=Launch VM&notify=true"
+      status_code: 200
+      headers:
+        Content-Type: "application/x-www-form-urlencoded"
+     tags:
+      - launch_vm
+      - test
+
+   - name: verify_vm 
+     become: yes
+     shell: sudo virsh list --all | grep {{ item }} 
+     with_items: "{{ vms }}"
+     register: result
+     tags:
+       - launch_vm
+       - test
+ 
+#   - assert:
+#           that: "item.rc == 0"
+#           msg: "\n\n\n\n\t\t\t\t {{ item.item.value }} defined \n\n"
+#        with_items: result.results
+#        tags:
+#          - launch_vm
+
+   - name: "POST_task_3"
+     uri:
+      url: http://localhost:8100/progress.php
+      method: POST
+      body: "task=verify vm&notify=true"
+      status_code: 200
+      headers:
+        Content-Type: "application/x-www-form-urlencoded"
+     tags:
+      - launch_vm
+      - test

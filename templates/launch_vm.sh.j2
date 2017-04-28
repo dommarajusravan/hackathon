@@ -1,0 +1,38 @@
+#!/bin/bash
+
+name={{ item.name }}
+ram={{ item.vram }}
+cpu={{ item.vcpu }}
+network={{ item.network }}
+os_size={{ item.os_disk }}G
+os_type={{ item.os_type }}
+os_disk_name={{ item.disk_path }}/{{ item.image_name}}_{{ item.name }}.raw
+image_file_path={{ item.image_source }}/{{ item.image_name }}.img
+
+existing_vm=`virsh list --all | grep $name | awk '{ print $2}'`
+vm_status=`virsh list --all | grep $name | awk '{ print $3}'`
+
+if [ "$existing_vm" == "$name" ]; then
+     if [ $vm_status == 'running' ]; then
+           virsh destroy $name
+           virsh undefine $name
+     elif [ $vm_status == 'shut' ] ; then
+           virsh undefine $name
+     fi
+fi
+
+qemu-img convert -O raw $image_file_path $os_disk_name
+
+virt-install \
+  --name=$name \
+  --ram=$ram \
+  --vcpus=$cpu,cores=$cpu \
+  --network network=$network,model=virtio, \
+  --os-type=$os_type \
+  --virt-type=kvm \
+  --disk $os_disk_name,bus=virtio,size=10,cache=none \
+  --noautoconsole \
+  --graphics vnc,listen=0.0.0.0 \
+  --autostart \
+  --import
+
